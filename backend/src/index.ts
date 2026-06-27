@@ -7,6 +7,15 @@ import { eq } from "drizzle-orm";
 
 const app = new Hono();
 
+import { cors } from "hono/cors";
+
+app.use(
+  "*",
+  cors({
+    origin: "http://localhost:3011",
+  })
+);
+
 app.post("/api/shortener", async (c) => {
   const body = await c.req.json()
   const link = body.link

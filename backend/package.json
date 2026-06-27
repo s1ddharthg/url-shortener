@@ -2,12 +2,13 @@
   "name": "url-shortner",
   "type": "module",
   "scripts": {
-    "dev": "tsx watch src/index.ts",
+    "dev": "tsx watch --env-file=.env src/index.ts",
     "build": "tsc",
-    "start": "node dist/index.js"
+    "start": "node --env-file=.env dist/index.js"
   },
   "dependencies": {
     "@hono/node-server": "^2.0.6",
+    "cors": "^2.8.6",
     "drizzle-orm": "^0.45.2",
     "hono": "^4.12.27",
     "postgres": "^3.4.9"
