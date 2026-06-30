@@ -8,6 +8,8 @@ import { eq } from "drizzle-orm";
 const app = new Hono();
 
 import { cors } from "hono/cors";
+import { encodeBase62 } from "./utils/base62.js";
+import { redis } from "./db/redis.js";
 
 app.use(
   "*",
@@ -19,24 +21,41 @@ app.use(
 app.post("/api/shortener", async (c) => {
   const body = await c.req.json()
   const link = body.link
-  const code = generateId(6)
 
-  await db.insert(shortener).values({
-    id: generateId(8),
+  const inserted = await db.insert(shortener).values({
     link,
-    code,
-  });
+    code: 'temp'
+  }).returning();
+
+  const id = inserted[0].id;
+  const code = encodeBase62(id);
+
+  await db.update(shortener).set({ code, }).where(eq(shortener.id, id));
 
   return c.json({ code });
 });
 
 app.get("/:code", async (c) => {
   const code = c.req.param("code")
+  // const link = await db.select().from(shortener).where(eq(shortener.code, code));
+
+  const cached = await redis.get(code);
+
+  if (cached) {
+    return c.redirect(cached);
+  }
+
   const link = await db.select().from(shortener).where(eq(shortener.code, code));
 
   if (link.length == 0) {
     return c.text("No link found")
   }
+
+  await redis.set(code, link[0].link,
+    {
+      EX: 3600,
+    }
+  );
 
   return c.redirect(link[0].link);
 });
