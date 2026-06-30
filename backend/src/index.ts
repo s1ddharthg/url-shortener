@@ -7,6 +7,11 @@ import { eq } from "drizzle-orm";
 
 const app = new Hono();
 
+app.onError((err, c) => {
+  console.error("Hono encountered an error:", err);
+  return c.json({ error: err.message, stack: err.stack }, 500);
+});
+
 import { cors } from "hono/cors";
 import { encodeBase62 } from "./utils/base62.js";
 import { redis } from "./db/redis.js";
@@ -24,7 +29,7 @@ app.post("/api/shortener", async (c) => {
 
   const inserted = await db.insert(shortener).values({
     link,
-    code: 'temp'
+    code: "temp"
   }).returning();
 
   const id = inserted[0].id;
@@ -37,7 +42,6 @@ app.post("/api/shortener", async (c) => {
 
 app.get("/:code", async (c) => {
   const code = c.req.param("code")
-  // const link = await db.select().from(shortener).where(eq(shortener.code, code));
 
   const cached = await redis.get(code);
 
