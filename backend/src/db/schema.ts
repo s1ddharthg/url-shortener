@@ -1,4 +1,4 @@
-import { pgTable, serial, varchar, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, serial, varchar, timestamp, text } from "drizzle-orm/pg-core";
 
 export const shortener = pgTable("shortener", {
     id: serial("id").primaryKey(),
@@ -9,5 +9,7 @@ export const shortener = pgTable("shortener", {
 export const clicks = pgTable("clicks", {
     id: serial("id").primaryKey(),
     shortCode: varchar("short_code", { length: 255, }).notNull(),
+    ip: varchar("ip", { length: 255, }),
+    userAgent: text("user_agent"),
     clickedAt: timestamp("clicked_at").defaultNow().notNull(),
 });

@@ -6,7 +6,16 @@ new Worker(
     "clicks",
 
     async (job) => {
-        await db.insert(clicks).values({ shortCode: job.data.shortCode, });
+        await db.insert(clicks).values({
+            shortCode:
+                job.data.shortCode,
+
+            ip:
+                job.data.ip,
+
+            userAgent:
+                job.data.userAgent,
+        });
 
         console.log("Tracked click:", job.data.shortCode);
     },

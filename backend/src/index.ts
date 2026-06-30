@@ -1,7 +1,7 @@
 import { serve } from "@hono/node-server";
 import { Hono } from "hono";
 import { generateId } from "./utils/index.js";
-import { shortener } from "./db/schema.js";
+import { clicks, shortener } from "./db/schema.js";
 import { db } from "./db/index.js";
 import { eq } from "drizzle-orm";
 import { clickQueue } from "./queues/clickQueue.js";
@@ -62,14 +62,61 @@ app.get("/:code", async (c) => {
     }
   );
 
+  const userAgent = c.req.header("user-agent");
+  const ip = c.req.header("x-forwarded-for") ?? "unknown";
+
   await clickQueue.add(
     "track-click",
     {
       shortCode: code,
+      ip,
+      userAgent,
     }
   );
 
   return c.redirect(link[0].link);
+});
+
+app.get("/stats/:code", async (c) => {
+  const code = c.req.param("code")
+
+  const rows = await db.select().from(clicks).where(eq(clicks.shortCode, code));
+
+  const totalClicks = rows.length;
+  const uniqueVisitors = new Set(rows.map(row => row.ip)).size;
+  const daily = rows.reduce(
+    (acc, row) => {
+
+      const day =
+        row.clickedAt
+          ?.toISOString()
+          .split("T")[0];
+
+      if (!day) return acc;
+
+      acc[day] =
+        (acc[day] ?? 0) + 1;
+
+      return acc;
+
+    },
+    {} as Record<string, number>
+  );
+
+  const dailyClicks =
+    Object.entries(daily).map(
+      ([date, clicks]) => ({
+        date,
+        clicks,
+      })
+    );
+
+  return c.json({
+    totalClicks,
+    uniqueVisitors,
+    dailyClicks
+  });
+
 });
 
 const port = 3010;
