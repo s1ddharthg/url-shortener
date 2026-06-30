@@ -4,6 +4,7 @@ import { generateId } from "./utils/index.js";
 import { shortener } from "./db/schema.js";
 import { db } from "./db/index.js";
 import { eq } from "drizzle-orm";
+import { clickQueue } from "./queues/clickQueue.js";
 
 const app = new Hono();
 
@@ -58,6 +59,13 @@ app.get("/:code", async (c) => {
   await redis.set(code, link[0].link,
     {
       EX: 3600,
+    }
+  );
+
+  await clickQueue.add(
+    "track-click",
+    {
+      shortCode: code,
     }
   );
 
