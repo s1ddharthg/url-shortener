@@ -5,6 +5,7 @@ import { clicks, shortener } from "./db/schema.js";
 import { db } from "./db/index.js";
 import { eq } from "drizzle-orm";
 import { clickQueue } from "./queues/clickQueue.js";
+import { rateLimit } from "./middleware/rateLimiter.js";
 
 const app = new Hono();
 
@@ -27,6 +28,19 @@ app.use(
 app.post("/api/shortener", async (c) => {
   const body = await c.req.json()
   const link = body.link
+  const ip = c.req.header("x-forwarded-for") ?? "unknown";
+
+  const allowed = await rateLimit(ip, 10);
+
+  if (!allowed) {
+    return c.json(
+      {
+        error:
+          "Rate limit exceeded",
+      },
+      429
+    );
+  }
 
   const inserted = await db.insert(shortener).values({
     link,
