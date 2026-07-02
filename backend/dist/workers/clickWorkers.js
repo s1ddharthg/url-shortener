@@ -9,8 +9,8 @@ new Worker("clicks", async (job) => {
     });
     console.log("Tracked click:", job.data.shortCode);
 }, {
-    connection: {
+    connection: (process.env.REDIS_URL ? process.env.REDIS_URL : {
         host: "localhost",
         port: 6379,
-    },
+    }),
 });
