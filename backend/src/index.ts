@@ -6,6 +6,8 @@ import { db } from "./db/index.js";
 import { eq } from "drizzle-orm";
 import { clickQueue } from "./queues/clickQueue.js";
 import { rateLimit } from "./middleware/rateLimiter.js";
+import { startClickWorker } from "./workers/clickWorkers.js";
+
 
 const app = new Hono();
 
@@ -132,6 +134,9 @@ app.get("/stats/:code", async (c) => {
   });
 
 });
+
+
+startClickWorker();
 
 const port = Number(process.env.PORT) || 3010;
 

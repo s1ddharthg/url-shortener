@@ -1,12 +1,10 @@
 import { Queue } from "bullmq";
+import { redisConnection } from "./connection.js";
 
 export const clickQueue =
     new Queue(
         "clicks",
         {
-            connection: (process.env.REDIS_URL ? process.env.REDIS_URL : {
-                host: "localhost",
-                port: 6379,
-            }) as any,
+            connection: redisConnection,
         }
     );

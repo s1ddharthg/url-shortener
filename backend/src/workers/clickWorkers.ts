@@ -1,28 +1,24 @@
 import { Worker } from "bullmq";
 import { db } from "../db/index.js";
 import { clicks } from "../db/schema.js";
+import { redisConnection } from "../queues/connection.js";
 
-new Worker(
+export function startClickWorker() {
+  const worker = new Worker(
     "clicks",
-
     async (job) => {
-        await db.insert(clicks).values({
-            shortCode:
-                job.data.shortCode,
-
-            ip:
-                job.data.ip,
-
-            userAgent:
-                job.data.userAgent,
-        });
-
-        console.log("Tracked click:", job.data.shortCode);
+      await db.insert(clicks).values({
+        shortCode: job.data.shortCode,
+        ip: job.data.ip,
+        userAgent: job.data.userAgent,
+      });
     },
     {
-        connection: (process.env.REDIS_URL ? process.env.REDIS_URL : {
-            host: "localhost",
-            port: 6379,
-        }) as any,
+      connection: redisConnection,
     }
-);
+  );
+
+  worker.on("error", (err) => console.error("Click worker error:", err));
+
+  return worker;
+}

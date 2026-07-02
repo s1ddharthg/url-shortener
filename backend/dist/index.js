@@ -6,6 +6,7 @@ import { db } from "./db/index.js";
 import { eq } from "drizzle-orm";
 import { clickQueue } from "./queues/clickQueue.js";
 import { rateLimit } from "./middleware/rateLimiter.js";
+import { startClickWorker } from "./workers/clickWorkers.js";
 const app = new Hono();
 app.onError((err, c) => {
     console.error("Hono encountered an error:", err);
@@ -83,6 +84,7 @@ app.get("/stats/:code", async (c) => {
         dailyClicks
     });
 });
+startClickWorker();
 const port = Number(process.env.PORT) || 3010;
 serve({
     fetch: app.fetch,
