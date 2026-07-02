@@ -133,8 +133,7 @@ app.get("/stats/:code", async (c) => {
 
 });
 
-const port = 3010;
-console.log(`Server is running on port ${port}`);
+const port = Number(process.env.PORT) || 3010;
 
 serve({
   fetch: app.fetch,
