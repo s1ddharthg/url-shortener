@@ -13,7 +13,9 @@
     "drizzle-orm": "^0.45.2",
     "hono": "^4.12.27",
     "postgres": "^3.4.9",
-    "redis": "^6.0.1"
+    "redis": "^6.0.1",
+    "@types/node": "^20.11.17",
+    "typescript": "^5.8.3"
   },
   "devDependencies": {
     "@types/node": "^20.11.17",
