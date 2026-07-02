@@ -4,6 +4,6 @@ import * as schema from "./schema.js";
 import { env } from "process";
 
 const queryClient = postgres(
-    `postgres://postgres:${env.DB_PASSWORD}@127.0.0.1:5432/url-shortener`
+    process.env.DATABASE_URL!
 );
 export const db = drizzle(queryClient, { schema });
