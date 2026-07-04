@@ -75,6 +75,7 @@ export default function ShortenerForm() {
                         <a
                             href={shortUrl}
                             target="_blank"
+                            rel="noopener noreferrer"
                             className="text-blue-500 break-all"
                         >
                             {shortUrl}
