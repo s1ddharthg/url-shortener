@@ -14,12 +14,15 @@ import {
 export default function ShortenerForm() {
     const [link, setLink] = useState("");
     const [shortUrl, setShortUrl] = useState("");
+    const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
 
     const shorten = async () => {
         if (!link) return;
 
         setLoading(true);
+        setError("");
+        setShortUrl("");
 
         try {
             const res = await fetch(
@@ -35,14 +38,20 @@ export default function ShortenerForm() {
 
             const data = await res.json();
 
+            if (!res.ok) {
+                setError(data.error ?? "Failed to shorten URL");
+                return;
+            }
+
             setShortUrl(
                 `${process.env.NEXT_PUBLIC_API_URL}/${data.code}`
             );
         } catch (err) {
             console.error(err);
+            setError("Failed to reach the server");
+        } finally {
+            setLoading(false);
         }
-
-        setLoading(false);
     };
 
     return (
@@ -65,6 +74,10 @@ export default function ShortenerForm() {
                 >
                     {loading ? "Generating..." : "Shorten URL"}
                 </Button>
+
+                {error && (
+                    <p className="text-sm text-destructive">{error}</p>
+                )}
 
                 {shortUrl && (
                     <div className="rounded-md border p-3">
